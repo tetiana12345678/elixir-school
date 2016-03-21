@@ -131,7 +131,7 @@ iex> cond do
 
 ## `with`
 
-The special form `with` is useful when you might us a nested `case` statement or situations that cannot cleanly be piped together. We'll start with a simple example of `with` and then look at something more significant:
+The special form `with` is useful when you might use a nested `case` statement or situations that cannot cleanly be piped together. We'll start with a simple example of `with` and then look at something more significant:
 
 ```elixir
 iex> user = %{first: "Sean", last: "Callan"}
@@ -155,9 +155,22 @@ iex> with {:ok, first} <- Map.fetch(user, :first),
 Now let's look a larger example without `with` and then see how we can refactor it:
 
 ```elixir
+case Repo.insert(changeset) do 
+  {:ok, user} -> 
+    case Guardian.encode_and_sign(resource, :token, claims) do
+      {:ok, jwt, full_claims} ->
+        important_stuff(jwt, full_claims)
+      error -> error
+    end
+  error -> error
+end
 ```
 
 When we introduce `with` we end up with fewer lines of code and code that is easy to understand:
 
 ```elixir
+with 
+  {:ok, user} <- Repo.insert(changeset),
+  {:ok, jwt, full_claims} <- Guardian.encode_and_sign(user, :token),
+  do: important_stuff(jwt, full_claims)
 ```
